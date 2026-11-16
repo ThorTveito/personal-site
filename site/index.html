@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bilder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="gallery-page">
+<main id="stage" aria-label="Bilderom">
+  <div id="scene"></div>
+</main>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="loader-name" id="loader-name"></div>
+  <div class="loader-bar"><div id="loader-fill"></div></div>
+  <div id="loader-text">Laster bilder …</div>
+</div>
+
+<div id="caption" aria-live="polite"></div>
+
+<header class="hud">
+  <div>
+    <div id="site-name" class="name"></div>
+    <p class="hint">Dra for å flytte deg rundt. Scroll eller +/− for å zoome. Klikk på et bilde for å åpne det.</p>
+  </div>
+  <nav aria-label="Seksjoner">
+    <a href="index.html" aria-current="page">Bilder</a>
+    <a href="tanker.html">Tanker</a>
+  </nav>
+</header>
+
+<div class="zoom">
+  <button type="button" id="zoom-in" aria-label="Zoom inn">+</button>
+  <button type="button" id="zoom-out" aria-label="Zoom ut">−</button>
+</div>
+
+<dialog id="viewer" aria-label="Bildevisning">
+  <button type="button" class="close" aria-label="Lukk">×</button>
+  <button type="button" class="nav prev" aria-label="Forrige bilde">←</button>
+  <figure>
+    <img id="viewer-img" alt="">
+    <figcaption id="viewer-cap"></figcaption>
+  </figure>
+  <button type="button" class="nav next" aria-label="Neste bilde">→</button>
+</dialog>
+
+<script src="gallery.js"></script>
+</body>
+</html>

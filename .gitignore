@@ -1,0 +1,22 @@
+# Originale bilder (store HEIC/JPEG fra telefonen). Bare de nedskalerte kopiene i site/ brukes.
+originals/
+
+# Hjelpefiler som skriptene lager
+scripts/.drive-seen.json
+scripts/.dates.json
+
+# Hemmeligheter, aldri legg nøkler i git
+.env
+.env.*
+
+node_modules/
+.DS_Store
+
+# Vil du IKKE legge de personlige bildene i git (f.eks. hvis repoet er offentlig)?
+# Fjern # foran de to linjene under. Da må siden bygges og publiseres av et skript/CI som henter bildene selv.
+# site/photos/
+# site/thumbs/
+
+# Privat konfigurasjon (Drive-mappe-ID og dokument-ID) og lokale originalbilder
+config.local.json
+local-photos/
