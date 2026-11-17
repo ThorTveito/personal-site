@@ -14,15 +14,13 @@
     captionEl.textContent = 'Fant ikke photos.json. Kjør: node scripts/build-photos.mjs';
     return;
   }
-  document.getElementById('site-name').textContent = data.name || '';
-  document.title = data.name || 'Bilder';
   const photos = data.photos || [];
 
   // Last bildene først, så vi kjenner sideforholdet.
   const loader = document.getElementById('loader');
   const fill = document.getElementById('loader-fill');
   const text = document.getElementById('loader-text');
-  document.getElementById('loader-name').textContent = data.name || '';
+  if (data.name) document.getElementById('loader-name').textContent = data.name;
   let count = 0;
   const tick = () => {
     count++;
@@ -83,6 +81,16 @@
   const cam = { fx: 0, fy: 0, tx: 0, ty: 0, z: 0, tz: 0, x: 0, y: 0, px: 0, py: 0 };
   const clampZ = (v) => Math.max(Z_MIN, Math.min(Z_MAX, v));
   const clampP = (v) => Math.max(-limit, Math.min(limit, v));
+  // Start langt nok ute til å se mesteparten av rommet, så man kan zoome inn derfra.
+  // Bildene ligger innenfor ca. ±850 × ±500 (× spread); +180 for selve bildestørrelsen.
+  const fitZ = () => {
+    const sx = innerWidth / 2 / (850 * spread + 180);
+    const sy = innerHeight / 2 / (500 * spread + 180);
+    // Midt mellom å passe bredden og høyden, med luft rundt. Ikke mindre enn 0.3 (mobil).
+    const s = Math.max(0.3, Math.sqrt(sx * sy) * 0.75);
+    return clampZ(Math.min(0, PERSPECTIVE - PERSPECTIVE / s));
+  };
+  cam.z = cam.tz = fitZ();
   let dragging = false, moved = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
 
   stage.addEventListener('pointermove', (e) => {

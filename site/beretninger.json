@@ -1,0 +1,26 @@
+{
+  "name": "Thor Tveito",
+  "docUrl": "",
+  "posts": [
+    {
+      "id": "2026-11-16-eksempel-pa-en-beretning",
+      "date": "2026-11-16",
+      "title": "Eksempel på en beretning",
+      "body": "Her kommer teksten din. Skriv nye beretninger på den skjulte skrivesiden, eller i Google Docs.\n\nAvsnitt skilles med en tom linje.",
+      "images": [
+        { "src": "photos/08-havet.svg", "width": 600, "height": 800, "caption": "Eksempelbilde" },
+        { "src": "photos/02-morgenlys.svg", "width": 600, "height": 800 },
+        { "src": "photos/03-tur%20til%20fjells.svg", "width": 600, "height": 450 }
+      ],
+      "source": "eksempel"
+    },
+    {
+      "id": "2026-11-09-et-eldre-innlegg",
+      "date": "2026-11-09",
+      "title": "Et eldre innlegg",
+      "body": "Eldre beretninger havner lenger ned.",
+      "images": [],
+      "source": "eksempel"
+    }
+  ]
+}

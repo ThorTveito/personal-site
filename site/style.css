@@ -1,114 +1,446 @@
+/* ==========================================================================
+   Thor Tveito: felles stilark. Tokens, grunnstil og komponenter.
+   Se STYLE.md for reglene. Sidespesifikk stil (bilderommet) ligger i gallery.css.
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
 :root {
-  --bg: #f4f5f5;
-  --ink: #111;
-  --muted: #555;
-  --line: #d8d8d8;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Farge: lys modus */
+  --ink: #0d0d0d;
+  --paper: #f2efe9;
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --muted: #6a665f;          /* 4.97:1 mot papir */
+  --line: #d9d3c8;           /* hårstrek, kun dekor */
+  --accent: #a84a26;         /* «glør», 4.98:1 mot papir. Brukes sparsomt. */
+  --on-accent: var(--paper);
+
+  /* Typografi */
+  --font-display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Flytende typeskala (≈ 1.25 → 1.333 fra mobil til desktop) */
+  --step--1: clamp(0.72rem, 0.70rem + 0.10vw, 0.78rem);   /* etiketter */
+  --step-0:  clamp(1rem, 0.96rem + 0.20vw, 1.0625rem);    /* brødtekst */
+  --step-1:  clamp(1.25rem, 1.16rem + 0.45vw, 1.5rem);
+  --step-2:  clamp(1.56rem, 1.38rem + 0.90vw, 2.1rem);
+  --step-3:  clamp(1.95rem, 1.60rem + 1.75vw, 3rem);
+  --step-4:  clamp(2.45rem, 1.80rem + 3.20vw, 4.5rem);
+  --step-hero: clamp(2.75rem, 1.2rem + 8vw, 8.5rem);
+
+  --leading-tight: 1.05;
+  --leading-body: 1.7;
+  --tracking-label: 0.14em;
+  --measure: 60ch;
+
+  /* Avstand (4px-basert) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 7rem;
+
+  /* Rutenett */
+  --margin: clamp(1rem, 4.5vw, 4.5rem);   /* sidemarg */
+  --gutter: clamp(1rem, 2vw, 2rem);
+  --columns: 4;
+  --header-h: 4.5rem;
+
+  /* Bevegelse */
+  --dur-fast: 160ms;
+  --dur: 280ms;
+  --dur-reveal: 600ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --hairline: 1px solid var(--line);
+
+  color-scheme: light dark;
 }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--ink);
+    --fg: var(--paper);
+    --muted: #9a958c;        /* 6.53:1 mot blekk */
+    --line: #2e2c29;
+    --accent: #e0805a;       /* 6.85:1 mot blekk */
+    --on-accent: var(--ink);
+  }
+}
+
+@media (min-width: 48rem) { :root { --columns: 12; --header-h: 5.5rem; } }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur: 0ms; --dur-reveal: 0ms; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Grunnstil ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 var(--step-0) / var(--leading-body) var(--font-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+p { margin: 0; text-wrap: pretty; }
 a { color: inherit; text-decoration: none; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
 
-/* ---------- Galleri ---------- */
-.gallery-page { overflow: hidden; height: 100vh; }
-/* Ingen markering eller dra-og-slipp av bilder når man drar seg rundt. */
-.gallery-page, #stage, .photo, .photo img, #caption {
-  -webkit-user-select: none; user-select: none;
-  -webkit-user-drag: none; -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.photo:focus:not(:focus-visible) { outline: none; }
-dialog { -webkit-user-select: none; user-select: none; }
-dialog figcaption { -webkit-user-select: text; user-select: text; }
-#stage {
-  position: fixed; inset: 0;
-  perspective: 900px; perspective-origin: 50% 50%;
-  touch-action: none; cursor: grab;
-}
-#stage.dragging { cursor: grabbing; }
-#scene {
-  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
-  transform-style: preserve-3d; will-change: transform;
-}
-.photo {
-  position: absolute; left: 0; top: 0; display: block; padding: 0; border: 0;
-  background: #ddd; cursor: pointer; backface-visibility: hidden;
-}
-.photo img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.photo:hover, .photo:focus-visible { box-shadow: 0 12px 28px rgba(0,0,0,.28); outline: none; }
+::selection { background: var(--accent); color: var(--on-accent); }
 
-#caption {
-  position: fixed; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-  text-align: center; font-size: clamp(22px, 3.2vw, 36px);
-  text-shadow: 0 0 14px var(--bg), 0 0 4px var(--bg);
-  pointer-events: none; z-index: 5;
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 1px;
 }
 
-.hud {
-  position: fixed; left: 0; right: 0; top: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 28px 40px; pointer-events: none;
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-.hud > * { pointer-events: auto; }
-.name { font-size: 22px; font-weight: 500; }
-.hint { margin: 4px 0 0; font-size: 14px; color: var(--muted); max-width: 40ch; }
-nav { display: flex; gap: 24px; }
-nav a { min-height: 44px; display: flex; align-items: center; font-size: 16px; color: var(--muted); }
-nav a[aria-current] { color: var(--ink); font-weight: 500; }
 
-.zoom { position: fixed; left: 40px; bottom: 32px; display: flex; gap: 10px; z-index: 10; }
-.zoom button {
-  width: 48px; height: 48px; border-radius: 50%; border: 1px solid #ccc;
-  background: #fff; font-size: 22px; color: var(--ink); cursor: pointer;
+.skip-link {
+  position: absolute; left: var(--margin); top: var(--space-2); z-index: 100;
+  padding: var(--space-2) var(--space-3); background: var(--bg);
+  transform: translateY(-200%);
 }
-.zoom button:hover { background: #f0f0f0; }
+.skip-link:focus-visible { transform: none; }
 
-/* ---------- Innlasting ---------- */
-#loader {
-  position: fixed; inset: 0; z-index: 50; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
-  transition: opacity .6s ease, visibility .6s;
+/* Små versaletiketter: nav, metadata, hint */
+.label {
+  font: 500 var(--step--1) / 1.4 var(--font-body);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
 }
-#loader.done { opacity: 0; visibility: hidden; }
-.loader-name { font-size: 22px; font-weight: 500; }
-.loader-bar { width: min(260px, 60vw); height: 2px; background: var(--line); overflow: hidden; }
-#loader-fill { width: 0; height: 100%; background: var(--ink); transition: width .25s ease; }
-#loader-text { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-#scene { opacity: 0; transition: opacity .8s ease .2s; }
-#scene.ready { opacity: 1; }
 
-/* ---------- Visning ---------- */
-dialog {
-  border: 0; padding: 0; width: 100vw; height: 100vh; max-width: none; max-height: none;
-  background: rgba(244,245,245,.96); color: var(--ink);
+/* ---------- Rutenett ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-inline: var(--margin);
 }
-dialog[open] { display: flex; align-items: center; justify-content: center; gap: 24px; }
-dialog::backdrop { background: rgba(244,245,245,.96); }
-dialog figure { margin: 0; text-align: center; max-width: 80vw; }
-dialog img { max-width: 80vw; max-height: 78vh; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
-dialog figcaption { margin-top: 16px; font-size: 18px; }
-dialog button {
-  width: 48px; height: 48px; border-radius: 50%; border: 1px solid #ccc;
-  background: #fff; font-size: 22px; cursor: pointer; color: var(--ink);
-}
-dialog .close { position: absolute; top: 24px; right: 32px; }
 
-/* ---------- Tanker ---------- */
-.text-page { min-height: 100vh; }
-.text-page .hud { position: static; }
-.posts { max-width: 640px; margin: 40px auto 120px; padding: 0 24px; }
-.posts h1 { font-size: 34px; font-weight: 500; margin: 0 0 32px; }
-.post { padding: 24px 0; border-top: 1px solid var(--line); }
-.post time { font-size: 14px; color: var(--muted); }
-.post h2 { font-size: 24px; font-weight: 500; margin: 6px 0 10px; }
-.post p { margin: 0 0 12px; font-size: 17px; line-height: 1.65; color: #333; white-space: pre-line; }
+/* ---------- Logo: søker (viewfinder) ----------
+   Fire hjørnemerker tegnet med bakgrunner (currentColor), navnet i kursiv,
+   og ett fokuspunkt i aksentfargen. Skaleres med font-size. */
+.vf {
+  --vf-len: 0.5em;
+  --vf-w: max(1px, 0.024em);
+  position: relative;
+  display: inline-block;
+  padding: 0.3em 0.62em 0.36em;
+  font: italic 400 1em / 1 var(--font-display);
+  letter-spacing: -0.015em;
+  text-transform: lowercase;
+  white-space: nowrap;
+  color: var(--fg);
+  background:
+    linear-gradient(currentColor 0 0) 0 0 / var(--vf-len) var(--vf-w),
+    linear-gradient(currentColor 0 0) 0 0 / var(--vf-w) var(--vf-len),
+    linear-gradient(currentColor 0 0) 100% 0 / var(--vf-len) var(--vf-w),
+    linear-gradient(currentColor 0 0) 100% 0 / var(--vf-w) var(--vf-len),
+    linear-gradient(currentColor 0 0) 0 100% / var(--vf-len) var(--vf-w),
+    linear-gradient(currentColor 0 0) 0 100% / var(--vf-w) var(--vf-len),
+    linear-gradient(currentColor 0 0) 100% 100% / var(--vf-len) var(--vf-w),
+    linear-gradient(currentColor 0 0) 100% 100% / var(--vf-w) var(--vf-len);
+  background-repeat: no-repeat;
+}
+.vf::after {
+  content: "";
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  width: max(4px, 0.085em);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.vf-text { display: inline-block; }
+
+/* Liten utgave i toppteksten */
+.vf--sm { font-size: var(--step-1); --vf-len: 0.42em; }
+.vf--sm::after { top: 0.24em; right: 0.24em; }
+
+/* Stor utgave på forsiden, med én liten avsløring ved lasting */
+.vf--hero { font-size: var(--step-hero); --vf-len: 0.34em; padding: 0.24em 0.5em 0.3em; }
+.vf--hero::after { top: 0.17em; right: 0.17em; }
+.vf--hero .vf-text { animation: vf-reveal var(--dur-reveal) var(--ease) 120ms backwards; }
+.vf--hero::after { animation: vf-dot var(--dur-fast) var(--ease) 640ms backwards; }
+@keyframes vf-reveal {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; }
+  to   { clip-path: inset(-25% -10% -25% -10%); opacity: 1; }
+}
+@keyframes vf-dot { from { opacity: 0; } }
+
+/* ---------- Navigasjon ---------- */
+.nav ul { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+.nav li { display: flex; align-items: center; }
+/* Stille skilletegn mellom punktene: Bilder · Beretninger (skjult for skjermlesere) */
+.nav li + li::before {
+  content: "·" / "";
+  padding-inline: var(--space-3);
+  color: var(--muted);
+}
+.nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: 500 var(--step--1) / 1 var(--font-body);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
+}
+/* Strek som tegnes inn fra venstre */
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: var(--tracking-label);   /* ikke under siste bokstavs sporing */
+  bottom: calc(50% - 0.95em);
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+.nav a:hover, .nav a:focus-visible { color: var(--fg); }
+.nav a:hover::after, .nav a:focus-visible::after { transform: scaleX(1); }
+/* Gjeldende side: blekk + et lite aksentpunkt under ordet (i stedet for streken) */
+.nav a[aria-current="page"] { color: var(--fg); }
+.nav a[aria-current="page"]::after {
+  left: calc(50% - 2px - var(--tracking-label) / 2);
+  right: auto;
+  width: 4px;
+  height: 4px;
+  bottom: calc(50% - 1.15em);
+  border-radius: 50%;
+  background: var(--accent);
+  transform: none;
+}
+
+/* ---------- Topptekst ---------- */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-h);
+  padding-inline: var(--margin);
+}
+/* Optisk justering på store skjermer: teksten står på marglinjen, hjørnemerkene henger ut i margen */
+@media (min-width: 48rem) { .site-header .vf { margin-left: -0.62em; } }
+
+/* ---------- Bunntekst ---------- */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-9) var(--margin) 0;
+  padding-block: var(--space-5) var(--space-6);
+  border-top: var(--hairline);
+}
+
+/* ---------- Forside ---------- */
+.home {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+.home-main {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--margin);
+}
+@media (min-width: 48rem) {
+  .home-main { justify-items: center; }
+  .home-main .nav { justify-self: center; }
+}
+.home-main h1 { margin: 0; font-size: inherit; line-height: 1; }
+.home .nav li + li::before { padding-inline: var(--space-4); }
+.home-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--margin);
+}
+
+/* ---------- Tekstsider (Beretninger og senere sider) ---------- */
+.page-head {
+  padding-block: var(--space-8) var(--space-7);
+  row-gap: var(--space-3);
+}
+.page-head .label { grid-column: 1 / -1; }
+.page-head h1 {
+  grid-column: 1 / -1;
+  font-size: var(--step-4);
+}
+.prose { grid-column: 1 / -1; max-width: var(--measure); }
+@media (min-width: 48rem) {
+  .page-head .label { grid-column: 1 / span 3; align-self: end; padding-bottom: 0.6em; }
+  .page-head h1 { grid-column: 4 / -1; }
+  .prose { grid-column: 4 / span 7; }
+}
+
+/* ---------- Beretninger: liste som åpnes og lukkes ----------
+   <details class="entry"> med dato + tittel i <summary>, tekst og bilder i .entry-body. */
+.entry-list { grid-column: 1 / -1; border-bottom: var(--hairline); }
+.entry { border-top: var(--hairline); }
+
+.entry-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "date toggle" "title toggle";
+  align-items: center;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  padding-block: var(--space-5);
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.entry-head::-webkit-details-marker { display: none; }
+.entry-head time { grid-area: date; transition: color var(--dur-fast) var(--ease); }
+.entry-head h2 { grid-area: title; font-size: var(--step-3); }
+.entry-head .entry-meta { display: none; }
+
+/* Tynt pluss som blir minus når beretningen er åpen */
+.entry-toggle {
+  grid-area: toggle;
+  position: relative;
+  width: 0.9rem;
+  aspect-ratio: 1;
+  color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
+}
+.entry-toggle::before, .entry-toggle::after {
+  content: "";
+  position: absolute;
+  inset: calc(50% - 0.5px) 0 auto;
+  height: 1px;
+  background: currentColor;
+  transition: transform var(--dur) var(--ease);
+}
+.entry-toggle::after { transform: rotate(90deg); }
+.entry[open] .entry-toggle::after { transform: rotate(0deg); }
+.entry-head:hover time, .entry-head:hover .entry-toggle,
+.entry[open] .entry-head time, .entry[open] .entry-toggle { color: var(--fg); }
+
+/* Glatt åpning der nettleseren støtter det; ellers åpnes den bare */
+:root { interpolate-size: allow-keywords; }
+.entry::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition: block-size var(--dur) var(--ease), content-visibility var(--dur) allow-discrete;
+}
+.entry[open]::details-content { block-size: auto; }
+
+.entry-body { display: grid; gap: var(--space-6); padding-bottom: var(--space-7); }
+.entry-body .prose { display: grid; gap: var(--space-4); }
+.entry-body .prose p { white-space: pre-line; }
+
+/* Bildene får mer plass enn teksten: første bilde stort, resten to og to */
+.entry-media { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gutter); }
+.entry-media figure { margin: 0; display: grid; gap: var(--space-2); }
+.entry-media figure:first-child, .entry-media figure:only-child { grid-column: 1 / -1; }
+/* Liggende bilder fyller bredden; stående bilder stopper på 85 % av skjermhøyden */
+.entry-media img { display: block; width: auto; max-width: 100%; height: auto; max-height: 85vh; max-height: 85svh; background: var(--line); }
+.entry-media figcaption { font: italic 400 var(--step-0) / 1.4 var(--font-display); color: var(--muted); }
+
+@media (min-width: 48rem) {
+  /* Innholdet i <details> pakkes av nettleseren (::details-content), så subgrid når ikke fram.
+     Hode og kropp får derfor hvert sitt rutenett med samme kolonner som siden. */
+  .entry-head, .entry-body {
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+  .entry-head {
+    grid-template-areas: none;
+    align-items: baseline;
+    padding-block: var(--space-6);
+  }
+  .entry-head time { grid-area: 1 / 1 / 2 / span 3; }
+  .entry-head h2 { grid-area: 1 / 4 / 2 / span 7; }
+  .entry-head .entry-meta { display: block; grid-area: 1 / 11 / 2 / 12; justify-self: end; white-space: nowrap; }
+  .entry-toggle { grid-area: 1 / 12 / 2 / 13; justify-self: end; align-self: center; }
+  .entry-body .prose { grid-column: 4 / span 7; }
+  .entry-media { grid-column: 4 / -1; }
+  .entry-body > * { grid-row: auto; }
+}
+
 .empty { color: var(--muted); }
 
-@media (max-width: 640px) {
-  .hud { padding: 20px; }
-  .hint { display: none; }
-  .zoom { left: 20px; bottom: 20px; }
+/* ---------- Skjema (skrivesiden og senere skjema) ----------
+   Felt er bare en hårstrek under teksten. Knapper er hårstrek-rammer, ingen fyll. */
+.form { display: grid; gap: var(--space-6); }
+.field { display: grid; gap: var(--space-2); }
+.field > label, .field > .label { color: var(--muted); }
+.input, .textarea {
+  width: 100%;
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  transition: border-color var(--dur-fast) var(--ease);
 }
-@media (prefers-reduced-motion: reduce) {
-  .photo { transition: none; }
+.input:hover, .textarea:hover { border-bottom-color: var(--muted); }
+.input:focus-visible, .textarea:focus-visible { outline: none; border-bottom-color: var(--accent); }
+.input--title { font: 400 var(--step-3) / var(--leading-tight) var(--font-display); }
+.textarea { min-height: 12rem; resize: vertical; line-height: var(--leading-body); }
+.hint-text { font-size: var(--step--1); color: var(--muted); line-height: 1.5; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 44px; padding: 0 var(--space-5);
+  border: 1px solid var(--fg); border-radius: 0;
+  background: transparent; color: var(--fg);
+  font: 500 var(--step--1) / 1 var(--font-body);
+  letter-spacing: var(--tracking-label); text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn[aria-disabled="true"] { opacity: 0.5; cursor: progress; }
+.btn--quiet { border-color: var(--line); color: var(--muted); }
+.btn--quiet:hover { background: transparent; color: var(--fg); border-color: var(--fg); }
+
+.text-link {
+  background: linear-gradient(currentColor 0 0) 0 100% / 100% 1px no-repeat;
+  padding-bottom: 2px;
+  transition: background-size var(--dur) var(--ease), color var(--dur-fast);
+}
+.text-link:hover { color: var(--accent); }

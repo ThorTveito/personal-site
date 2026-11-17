@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Bilderommet (bilder.html). Bygger på tokens i style.css.
+   ID-ene her (#stage, #scene, #caption, #loader, #viewer …) brukes av gallery.js.
+   ========================================================================== */
+
+.gallery-page { overflow: hidden; height: 100vh; height: 100dvh; min-height: 0; }
+
+/* Ingen markering eller dra-og-slipp av bilder når man drar seg rundt. */
+.gallery-page #stage, .photo, .photo img, #caption {
+  -webkit-user-select: none; user-select: none;
+  -webkit-user-drag: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#viewer { -webkit-user-select: none; user-select: none; }
+#viewer figcaption { -webkit-user-select: text; user-select: text; }
+
+#stage {
+  position: fixed; inset: 0;
+  perspective: 900px; perspective-origin: 50% 50%;
+  touch-action: none; cursor: grab;
+}
+#stage.dragging { cursor: grabbing; }
+#scene {
+  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  transform-style: preserve-3d; will-change: transform;
+  opacity: 0; transition: opacity 0.8s var(--ease) 0.2s;
+}
+#scene.ready { opacity: 1; }
+
+.photo {
+  position: absolute; left: 0; top: 0; display: block; padding: 0; border: 0;
+  background: var(--line); cursor: pointer; backface-visibility: hidden;
+}
+.photo img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.photo:focus:not(:focus-visible) { outline: none; }
+.photo:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+
+/* Tekst over bildene står på flate papirlapper (som et veggskilt i et galleri):
+   helt flat bakgrunn, ingen glød, ingen skygge, ingen ramme. */
+
+/* Bildetittel: stille, nederst i midten */
+#caption {
+  position: fixed; left: 50%; bottom: var(--space-6); transform: translateX(-50%);
+  max-width: calc(100% - 2 * var(--margin));
+  padding: 0.2em 0.55em 0.28em;
+  background: var(--bg);
+  text-align: center;
+  font: italic 400 var(--step-2) / 1.1 var(--font-display);
+  pointer-events: none; z-index: 5;
+}
+#caption:empty { display: none; }
+
+/* Topptekst og kontroller ligger over rommet uten å ta imot dra */
+.gallery-page .site-header {
+  position: fixed; inset: 0 0 auto; z-index: 10; pointer-events: none;
+}
+.gallery-page .site-header > * { pointer-events: auto; }
+.gallery-page .site-header .vf { background-color: var(--bg); }
+.gallery-page .site-header .nav ul { background: var(--bg); padding-inline: var(--space-3); margin-right: calc(var(--space-3) * -1); }
+
+.room-controls {
+  position: fixed; left: var(--margin); bottom: var(--space-5); z-index: 10;
+  display: flex; align-items: center; gap: var(--space-5);
+}
+.room-controls .hint { max-width: 34ch; padding: var(--space-1) var(--space-2); background: var(--bg); }
+
+/* Firkantede hårstrek-knapper, uten fyll */
+.icon-btn {
+  display: inline-grid; place-items: center;
+  width: 44px; height: 44px; padding: 0;
+  border: var(--hairline); border-radius: 0;
+  background: transparent; color: var(--fg);
+  font: 300 1.25rem / 1 var(--font-body);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.icon-btn:hover { border-color: var(--fg); }
+.zoom { display: flex; }
+.zoom .icon-btn + .icon-btn { border-left: 0; }
+.zoom .icon-btn { background: var(--bg); }
+
+/* ---------- Innlasting ---------- */
+#loader {
+  position: fixed; inset: 0; z-index: 50; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5);
+  transition: opacity 0.6s var(--ease), visibility 0.6s;
+}
+#loader.done { opacity: 0; visibility: hidden; }
+#loader .vf { font-size: var(--step-3); }
+.loader-bar { width: min(240px, 60vw); height: 1px; background: var(--line); overflow: hidden; }
+#loader-fill { width: 0; height: 100%; background: var(--fg); transition: width 0.25s var(--ease); }
+#loader-text { font-variant-numeric: tabular-nums; }
+
+/* ---------- Visning av ett bilde ---------- */
+#viewer {
+  border: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none;
+  background: var(--bg); color: var(--fg);
+}
+#viewer[open] {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: var(--space-4); padding: var(--space-4) var(--margin);
+}
+#viewer::backdrop { background: var(--bg); }
+#viewer figure { margin: 0; display: grid; justify-items: center; gap: var(--space-4); }
+#viewer img { max-width: 100%; max-height: 78vh; max-height: 78dvh; object-fit: contain; }
+#viewer figcaption { font: italic 400 var(--step-1) / 1.3 var(--font-display); }
+#viewer .close { position: absolute; top: var(--space-5); right: var(--margin); }
+
+@media (max-width: 40rem) {
+  .room-controls .hint { display: none; }
+  #viewer[open] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; padding-inline: var(--space-4); }
+  #viewer figure { grid-column: 1 / -1; grid-row: 1; }
+  #viewer .prev { grid-row: 2; justify-self: start; }
+  #viewer .next { grid-row: 2; justify-self: end; }
+  #caption { bottom: calc(var(--space-5) + 56px); }
+}
