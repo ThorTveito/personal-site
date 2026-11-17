@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beretninger · Thor Tveito</title>
+<meta name="theme-color" content="#f2efe9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cstyle%3Epath%7Bstroke:%230d0d0d%7D@media(prefers-color-scheme:dark)%7Bpath%7Bstroke:%23f2efe9%7D%7D%3C/style%3E%3Cpath d='M3 11V3h8M21 3h8v8M29 21v8h-8M11 29H3v-8' fill='none' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23a84a26'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link label" href="#innhold">Hopp til innholdet</a>
+<header data-site-header></header>
+
+<main id="innhold">
+  <div class="grid page-head">
+    <p class="label" id="post-count">Beretninger</p>
+    <h1>Beretninger</h1>
+  </div>
+  <div class="grid">
+    <div class="entry-list" id="posts"><p class="empty prose">Laster …</p></div>
+  </div>
+  <div class="grid">
+    <p class="prose" id="doc-wrap" hidden style="margin-top: var(--space-6)"><a class="text-link" id="doc-link" href="#">Åpne dokumentet i Google Docs →</a></p>
+  </div>
+</main>
+
+<footer data-site-footer></footer>
+
+<script src="site.js"></script>
+<script>
+(async () => {
+  const box = document.getElementById('posts');
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  // «2026-11-16» → «16. november 2026»
+  const fmt = (s) => {
+    const d = new Date(s + 'T12:00:00');
+    return isNaN(d) ? s : d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+  let d;
+  try {
+    d = await (await fetch('beretninger.json', { cache: 'no-cache' })).json();
+  } catch (e) {
+    box.innerHTML = '<p class="empty prose">Fant ikke beretninger.json.</p>';
+    return;
+  }
+  if (d.docUrl) {
+    document.getElementById('doc-link').href = d.docUrl;
+    document.getElementById('doc-wrap').hidden = false;
+  }
+  const posts = (d.posts || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  document.getElementById('post-count').textContent = plural(posts.length, 'beretning', 'beretninger');
+  box.textContent = '';
+  if (!posts.length) { box.append(el('p', 'empty prose', 'Ingen beretninger ennå.')); return; }
+
+  posts.forEach((p, i) => {
+    const id = p.id || `b${i}`;
+    const images = p.images || [];
+    const entry = el('details', 'entry');
+    entry.id = id;
+
+    const head = el('summary', 'entry-head');
+    const time = el('time', 'label', p.date ? fmt(p.date) : 'Udatert');
+    if (p.date) time.dateTime = p.date;
+    head.append(time, el('h2', null, p.title || 'Uten tittel'));
+    if (images.length) head.append(el('span', 'label entry-meta', plural(images.length, 'bilde', 'bilder')));
+    const toggle = el('span', 'entry-toggle'); toggle.setAttribute('aria-hidden', 'true');
+    head.append(toggle);
+
+    const body = el('div', 'entry-body');
+    if (p.body) {
+      const prose = el('div', 'prose');
+      for (const para of p.body.split(/\n\s*\n/)) if (para.trim()) prose.append(el('p', null, para.trim()));
+      body.append(prose);
+    }
+    if (images.length) {
+      const media = el('div', 'entry-media');
+      for (const im of images) {
+        const fig = el('figure');
+        const img = el('img');
+        img.src = im.src; img.alt = im.alt || im.caption || '';
+        if (im.width && im.height) { img.width = im.width; img.height = im.height; }
+        img.loading = 'lazy'; img.decoding = 'async';
+        fig.append(img);
+        if (im.caption) fig.append(el('figcaption', null, im.caption));
+        media.append(fig);
+      }
+      body.append(media);
+    }
+
+    entry.append(head, body);
+    // Åpne beretninger får sin egen lenke (#id), så de kan deles.
+    entry.addEventListener('toggle', () => {
+      if (entry.open) history.replaceState(null, '', '#' + id);
+      else if (location.hash === '#' + id) history.replaceState(null, '', location.pathname);
+    });
+    box.append(entry);
+  });
+
+  const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if (target && target.classList.contains('entry')) { target.open = true; target.scrollIntoView(); }
+})();
+</script>
+</body>
+</html>
