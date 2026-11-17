@@ -1,13 +1,13 @@
 {
   "projects": [
     {
-      "id": "eksempel-big-buck-bunny",
-      "title": "Eksempel: Big Buck Bunny",
-      "year": "2008",
-      "role": "Eksempelprosjekt",
-      "length": "10 min",
-      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
-      "description": "Dette er et eksempel fra Blender Foundation, så du ser hvordan siden ser ut. Bytt det ut med dine egne prosjekter i film.json.\n\nLim inn en YouTube- eller Vimeo-lenke i «url», eller en lenke til en videofil (.mp4)."
+      "id": "oslo-bergen-reisebrev",
+      "title": "Oslo - Bergen 08.09.2026",
+      "year": "2026",
+      "role": "Reisebrev fra Oslo og Bergen",
+      "length": "12 min",
+      "url": "https://youtu.be/WwBFmLi3YjM",
+      "description": "Et reisebrev jeg lagde fra uken jeg dro til Oslo og Bergen. Min første video spilt inn med en Sony CX115E. Forsåvidt min første filmsnutt generelt."
     }
   ]
 }
