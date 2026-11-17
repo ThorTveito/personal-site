@@ -149,17 +149,10 @@ img { max-width: 100%; }
 /* ---------- Logo: søker (viewfinder) ----------
    Fire hjørnemerker tegnet med bakgrunner (currentColor), navnet i kursiv,
    og ett fokuspunkt i aksentfargen. Skaleres med font-size. */
-.vf {
+/* Hjørnemerkene alene (brukes av logoen og av avspillingsmerket på Film) */
+.vf, .corners {
   --vf-len: 0.5em;
   --vf-w: max(1px, 0.024em);
-  position: relative;
-  display: inline-block;
-  padding: 0.3em 0.62em 0.36em;
-  font: italic 400 1em / 1 var(--font-display);
-  letter-spacing: -0.015em;
-  text-transform: lowercase;
-  white-space: nowrap;
-  color: var(--fg);
   background:
     linear-gradient(currentColor 0 0) 0 0 / var(--vf-len) var(--vf-w),
     linear-gradient(currentColor 0 0) 0 0 / var(--vf-w) var(--vf-len),
@@ -170,6 +163,16 @@ img { max-width: 100%; }
     linear-gradient(currentColor 0 0) 100% 100% / var(--vf-len) var(--vf-w),
     linear-gradient(currentColor 0 0) 100% 100% / var(--vf-w) var(--vf-len);
   background-repeat: no-repeat;
+}
+.vf {
+  position: relative;
+  display: inline-block;
+  padding: 0.3em 0.62em 0.36em;
+  font: italic 400 1em / 1 var(--font-display);
+  letter-spacing: -0.015em;
+  text-transform: lowercase;
+  white-space: nowrap;
+  color: var(--fg);
 }
 .vf::after {
   content: "";
@@ -254,6 +257,14 @@ img { max-width: 100%; }
   gap: var(--space-4);
   min-height: var(--header-h);
   padding-inline: var(--margin);
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+/* Får ikke menyen plass ved siden av logoen, flytter hele menyen ned på egen linje
+   (i stedet for at punktene brekker hver for seg). */
+.site-header .nav { flex: 0 0 auto; max-width: 100%; }
+@media (max-width: 30rem) {
+  .nav li + li::before { padding-inline: var(--space-2); }
 }
 /* Optisk justering på store skjermer: teksten står på marglinjen, hjørnemerkene henger ut i margen */
 @media (min-width: 48rem) { .site-header .vf { margin-left: -0.62em; } }
@@ -444,3 +455,77 @@ img { max-width: 100%; }
   transition: background-size var(--dur) var(--ease), color var(--dur-fast);
 }
 .text-link:hover { color: var(--accent); }
+
+/* ---------- Film: videoprosjekter ----------
+   Hvert prosjekt: et 16:9-bilde med avspillingsmerke (hjørnemerkene fra logoen).
+   Videoen (YouTube/Vimeo/fil) lastes først når man trykker. */
+.project-list { grid-column: 1 / -1; display: grid; gap: var(--space-8); }
+.project {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: var(--hairline);
+}
+.project .player { order: -1; margin-bottom: var(--space-3); }
+.project h2 { font-size: var(--step-3); }
+.project-meta { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); }
+.project .prose p { white-space: pre-line; }
+.project .prose { display: grid; gap: var(--space-4); }
+
+.player {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 0;
+  background: var(--line);
+  color: var(--fg);
+  overflow: hidden;
+  cursor: pointer;
+}
+.player img, .player iframe, .player video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+  object-fit: cover;
+  display: block;
+}
+.player video { object-fit: contain; background: #000; }
+.player img { opacity: 0; transition: opacity var(--dur) var(--ease); }
+.player img.ready { opacity: 1; }
+/* Avspillingsmerket: en papirlapp med hjørnemerker, midt i bildet */
+.play-mark {
+  --vf-len: 0.7em;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: 0.7em;
+  padding: 0.95em 1.3em;
+  background-color: var(--bg);
+  font: 500 var(--step--1) / 1 var(--font-body);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.play-mark::before {
+  content: "";
+  width: 0; height: 0;
+  border-left: 0.6em solid currentColor;
+  border-block: 0.38em solid transparent;
+}
+.player:hover .play-mark, .player:focus-visible .play-mark { background-color: var(--fg); color: var(--bg); }
+.player:focus-visible { outline-offset: 6px; }
+.player.is-playing { cursor: auto; }
+
+@media (min-width: 48rem) {
+  .project {
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: start;
+  }
+  .project .player { grid-area: 1 / 4 / 2 / -1; margin-bottom: var(--space-4); }
+  .project-meta { grid-area: 1 / 1 / 3 / span 3; flex-direction: column; gap: var(--space-1); }
+  .project h2 { grid-area: 2 / 4 / 3 / span 7; }
+  .project .prose { grid-area: 3 / 4 / 4 / span 7; }
+}

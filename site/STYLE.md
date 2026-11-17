@@ -12,7 +12,7 @@ photos are always the loudest thing on the page.
 | `gallery.css` | Photo room only (`bilder.html`). Uses tokens; adds no new colors. |
 | `skriv.css`, `skriv.js` | The hidden writing page (`skriv.html`). Not in the nav. |
 | `site.js` | The single source for the header, the nav and the footer. |
-| `gallery.js`, `photos.json`, `beretninger.json` | The data contract: scripts and the writing page write the JSON, and the pages read it. |
+| `gallery.js`, `photos.json`, `beretninger.json`, `film.json` | The data contract: scripts, the writing page or you write the JSON, and the pages read it. |
 
 ## Adding a page
 
@@ -37,6 +37,7 @@ class="vf vf--hero"  home page, with the one load animation
 ```
 
 - Write the name as `Thor Tveito` in the HTML. CSS lowercases it, and screen readers get proper case.
+- The crop marks also exist on their own as `.corners`. Their only other use is the play mark on Film.
 - Never recolor the corners. Never move the dot out of the top-right corner or add a second dot.
 - Never put the logo on a box, a fill or a photo.
 - Favicon: the same corners plus the dot, inlined as a data-URI SVG in each `<head>`.
@@ -84,7 +85,8 @@ captions · `--step-2` · `--step-3` post titles · `--step-4` page titles ·
   `.post`, `.prose`). On mobile everything stacks, with the label above.
 - Spacing comes from `--space-1` … `--space-9` (4px base). Generous vertical rhythm:
   sections are separated by `--space-7`/`--space-8`, not by boxes.
-- Header: small logo top-left, nav top-right, height `--header-h`. Footer: a hairline,
+- Header: small logo top-left, nav top-right, height `--header-h`. If the nav doesn't fit beside the
+  logo, the whole nav moves to its own line below the logo; it never breaks between items next to the logo. Footer: a hairline,
   then two labels.
 - Separation is a 1px `--hairline`. **No cards, no shadows, no rounded corners, no fills.**
 
@@ -113,6 +115,17 @@ captions · `--step-2` · `--step-3` post titles · `--step-4` page titles ·
   support just open instantly.
 - Content in `<details>` doesn't inherit the page grid (`subgrid`), so `.entry-head` and
   `.entry-body` each declare the same 12 columns themselves.
+
+## Film (video projects)
+
+- `film.json` holds `projects: [{ id, title, year, role, length, url, poster?, description }]`.
+  `url` can be YouTube, Vimeo (including unlisted links with a hash) or a video file (`.mp4`/`.webm`).
+- Each project: the year, role and length as labels in columns 1–3, a 16:9 frame in columns 4–12, then the title and
+  the text. On mobile the frame comes first.
+- The frame shows a poster (`poster`, or the YouTube/Vimeo thumbnail) with a **play mark**: a paper label
+  with the logo's crop marks (`.corners`) and a small triangle. It inverts on hover. The player itself
+  (YouTube via `youtube-nocookie.com`, Vimeo with `dnt=1`) loads only after a click.
+- Never autoplay on load, and never show the platform's own player chrome before a click.
 
 ## Forms
 

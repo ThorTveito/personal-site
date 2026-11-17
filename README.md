@@ -6,7 +6,8 @@ Designreglene står i [site/STYLE.md](site/STYLE.md).
 | Side | Fil | Innhold fra |
 | --- | --- | --- |
 | Forside | `site/index.html` | |
-| Bilder | `site/bilder.html` | `site/photos.json` (`node scripts/build-photos.mjs`) |
+| Bilder | `site/bilder.html` | `site/photos.json` (arbeidsflyten «Hent nye bilder», eller `node scripts/sync-drive.mjs`) |
+| Film | `site/film.html` | `site/film.json` (redigeres for hånd) |
 | Beretninger | `site/beretninger.html` | `site/beretninger.json` (skrivesiden, eller `node scripts/sync-beretninger.mjs`) |
 | Skriv (skjult) | `site/skriv.html` | Lagrer nye beretninger i repoet |
 
@@ -14,6 +15,38 @@ Designreglene står i [site/STYLE.md](site/STYLE.md).
 
 `.github/workflows/pages.yml` publiserer `site/` ved hver push til `main`.
 Engangsoppsett: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+## Hente nye bilder fra Google Drive
+
+Legg bildene i Drive-mappa, og kjør så **Actions → Hent nye bilder → Run workflow** på GitHub.
+Arbeidsflyten laster ned nye bilder, gjør om HEIC til JPEG (maks 1600 px, uten EXIF), lager miniatyrer
+og `photos.json`, committer til `main` og publiserer siden. Bilder som alt finnes hoppes over.
+
+Engangsoppsett, under **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Verdi |
+| --- | --- |
+| `GOOGLE_API_KEY` | API-nøkkel fra Google Cloud Console med **Google Drive API** slått på (gjerne begrenset til bare den API-en) |
+| `DRIVE_FOLDER_ID` | ID-en fra mappeadressen (`drive.google.com/drive/folders/<ID>`). Mappa må være delt som «alle med lenken kan se». |
+
+## Legge til et filmprosjekt
+
+Rediger `site/film.json` (også mulig rett i GitHub, også fra mobilen) og legg til et prosjekt:
+
+```json
+{
+  "id": "sommerfilm-2026",
+  "title": "Sommerfilm",
+  "year": "2026",
+  "role": "Regi og foto",
+  "length": "4 min",
+  "url": "https://vimeo.com/123456789",
+  "description": "Kort om prosjektet.\n\nTom linje gir nytt avsnitt."
+}
+```
+
+`url` kan være YouTube, Vimeo (også ulistede lenker) eller en videofil (.mp4/.webm).
+Forhåndsbildet hentes automatisk, eller du kan sette `"poster": "sti/til/bilde.jpg"`. Fjern eksempelprosjektet når du legger inn ditt første.
 
 ## Skrive en ny beretning
 

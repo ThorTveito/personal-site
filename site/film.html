@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Film · Thor Tveito</title>
+<meta name="description" content="Videoprosjekter av Thor Tveito.">
+<meta name="theme-color" content="#f2efe9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cstyle%3Epath%7Bstroke:%230d0d0d%7D@media(prefers-color-scheme:dark)%7Bpath%7Bstroke:%23f2efe9%7D%7D%3C/style%3E%3Cpath d='M3 11V3h8M21 3h8v8M29 21v8h-8M11 29H3v-8' fill='none' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23a84a26'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link label" href="#innhold">Hopp til innholdet</a>
+<header data-site-header></header>
+
+<main id="innhold">
+  <div class="grid page-head">
+    <p class="label" id="count">Film</p>
+    <h1>Film</h1>
+  </div>
+  <div class="grid">
+    <div class="project-list" id="projects"><p class="empty prose">Laster …</p></div>
+  </div>
+</main>
+
+<footer data-site-footer></footer>
+
+<script src="site.js"></script>
+<script>
+// Prosjektene ligger i film.json. Videoen lastes ikke før man trykker «Spill av»,
+// så siden er lett og ingen spiller fra YouTube/Vimeo lastes uten grunn.
+(async () => {
+  const box = document.getElementById('projects');
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  // Finn ut hva slags video en lenke er
+  function parse(url) {
+    if (!url) return null;
+    let u;
+    try { u = new URL(url, location.href); } catch { return null; }
+    const host = u.hostname.replace(/^(www|m)\./, '');
+    if (host === 'youtu.be') return { type: 'youtube', id: u.pathname.slice(1) };
+    if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const id = u.searchParams.get('v') || (u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]+)/) || [])[1];
+      return id ? { type: 'youtube', id } : null;
+    }
+    if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+      const m = u.pathname.match(/\/(?:video\/)?(\d+)(?:\/(\w+))?/);
+      return m ? { type: 'vimeo', id: m[1], hash: m[2] || u.searchParams.get('h') || '', page: u.href } : null;
+    }
+    if (/\.(mp4|webm|m4v|mov)$/i.test(u.pathname)) return { type: 'file', src: u.href };
+    return null;
+  }
+
+  // Forhåndsbilde: «poster» fra film.json, ellers fra YouTube/Vimeo
+  async function posterFor(v) {
+    if (v.type === 'youtube') return `https://i.ytimg.com/vi/${v.id}/maxresdefault.jpg`;
+    if (v.type === 'vimeo') {
+      try {
+        const r = await fetch('https://vimeo.com/api/oembed.json?width=1280&url=' + encodeURIComponent(v.page));
+        return (await r.json()).thumbnail_url || '';
+      } catch { return ''; }
+    }
+    return '';
+  }
+
+  function play(player, v, title) {
+    let media;
+    if (v.type === 'file') {
+      media = el('video');
+      media.src = v.src; media.controls = true; media.autoplay = true; media.playsInline = true;
+    } else {
+      media = el('iframe');
+      media.src = v.type === 'youtube'
+        ? `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0`
+        : `https://player.vimeo.com/video/${v.id}?autoplay=1&dnt=1${v.hash ? '&h=' + v.hash : ''}`;
+      media.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media';
+      media.allowFullscreen = true;
+      media.referrerPolicy = 'strict-origin-when-cross-origin';
+    }
+    media.title = title;
+    // Bytt knappen ut med en vanlig boks, så tastaturfokus går rett inn i spilleren
+    const frame = el('div', 'player is-playing');
+    frame.append(media);
+    player.replaceWith(frame);
+    media.focus?.();
+  }
+
+  let d;
+  try {
+    d = await (await fetch('film.json', { cache: 'no-cache' })).json();
+  } catch {
+    box.innerHTML = '<p class="empty prose">Fant ikke film.json.</p>';
+    return;
+  }
+  const projects = (d.projects || []).slice().sort((a, b) => String(b.year || '').localeCompare(String(a.year || '')));
+  document.getElementById('count').textContent = `${projects.length} ${projects.length === 1 ? 'prosjekt' : 'prosjekter'}`;
+  box.textContent = '';
+  if (!projects.length) { box.append(el('p', 'empty prose', 'Ingen prosjekter ennå.')); return; }
+
+  for (const p of projects) {
+    const art = el('article', 'project');
+    if (p.id) art.id = p.id;
+    const title = p.title || 'Uten tittel';
+
+    art.append(el('h2', null, title));
+
+    const meta = el('p', 'project-meta');
+    for (const m of [p.year, p.role, p.length]) if (m) meta.append(el('span', 'label', m));
+    if (meta.childElementCount) art.append(meta);
+
+    const v = parse(p.url);
+    if (v) {
+      const player = el('button', 'player');
+      player.type = 'button';
+      player.setAttribute('aria-label', `Spill av «${title}»`);
+      const img = el('img');
+      img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+      img.addEventListener('load', () => {
+        // YouTube gir et grått 120 px-bilde når maxres mangler. Prøv da den mindre varianten.
+        if (v.type === 'youtube' && img.naturalWidth <= 120 && !img.dataset.fallback) {
+          img.dataset.fallback = '1';
+          img.src = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+          return;
+        }
+        img.classList.add('ready');
+      });
+      player.append(img, Object.assign(el('span', 'play-mark corners', 'Spill av'), { ariaHidden: 'true' }));
+      player.addEventListener('click', () => play(player, v, title));
+      art.append(player);
+      (p.poster ? Promise.resolve(p.poster) : posterFor(v)).then((src) => { if (src) img.src = src; });
+    }
+
+    if (p.description) {
+      const prose = el('div', 'prose');
+      for (const para of p.description.split(/\n\s*\n/)) if (para.trim()) prose.append(el('p', null, para.trim()));
+      art.append(prose);
+    }
+    box.append(art);
+  }
+})();
+</script>
+</body>
+</html>

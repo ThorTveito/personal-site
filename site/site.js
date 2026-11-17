@@ -2,6 +2,7 @@
 // Ny side? Legg til én linje i PAGES. Ingenting annet trenger å endres.
 const PAGES = [
   { href: 'bilder.html', label: 'Bilder' },
+  { href: 'film.html', label: 'Film' },
   { href: 'beretninger.html', label: 'Beretninger' },
 ];
 const NAME = 'Thor Tveito';

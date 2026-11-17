@@ -1,0 +1,13 @@
+{
+  "projects": [
+    {
+      "id": "eksempel-big-buck-bunny",
+      "title": "Eksempel: Big Buck Bunny",
+      "year": "2008",
+      "role": "Eksempelprosjekt",
+      "length": "10 min",
+      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+      "description": "Dette er et eksempel fra Blender Foundation, så du ser hvordan siden ser ut. Bytt det ut med dine egne prosjekter i film.json.\n\nLim inn en YouTube- eller Vimeo-lenke i «url», eller en lenke til en videofil (.mp4)."
+    }
+  ]
+}

@@ -22,7 +22,14 @@ const im = ['magick', 'identify'].find((t) => {
 });
 const cachePath = join(root, 'scripts', '.dates.json');
 let cache = {};
-try { cache = JSON.parse(await readFile(cachePath, 'utf8')); } catch {}
+// Datoer som allerede står i photos.json brukes om igjen. Konverterte bilder har ikke EXIF lenger,
+// og i GitHub Actions finnes verken originals/ eller .dates.json.
+try {
+  for (const p of JSON.parse(await readFile(join(root, 'site', 'photos.json'), 'utf8')).photos || []) {
+    if (p.date) cache[decodeURIComponent(p.src.replace(/^photos\//, ''))] = p.date;
+  }
+} catch {}
+try { Object.assign(cache, JSON.parse(await readFile(cachePath, 'utf8'))); } catch {}
 
 function exifDate(path) {
   if (!im) return '';

@@ -1,5 +1,5 @@
 // Laster ned nye bilder fra en delt Google Drive-mappe til site/photos/.
-// Krever: driveFolderId i config.json (mappen delt som «alle med lenken kan se»)
+// Krever: driveFolderId i config.local.json eller DRIVE_FOLDER_ID i miljøet (mappen delt som «alle med lenken kan se»)
 // og miljøvariabelen GOOGLE_API_KEY (en API-nøkkel med Drive API slått på).
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { driveFolderId } = await loadConfig(root);
 const key = process.env.GOOGLE_API_KEY;
 if (!driveFolderId || !key) {
-  console.error('Mangler driveFolderId i config.json eller GOOGLE_API_KEY i miljøet.');
+  console.error('Mangler driveFolderId (config.local.json eller DRIVE_FOLDER_ID) eller GOOGLE_API_KEY i miljøet.');
   process.exit(1);
 }
 const dir = join(root, 'site', 'photos');
@@ -35,15 +35,18 @@ let seen = {};
 try { seen = JSON.parse(await readFile(seenPath, 'utf8')); } catch {}
 
 // Hopp også over filer som finnes fra før (i photos/ eller originals/), selv uten sporing.
+// Sammenlign uten filendelse: IMG_1234.HEIC blir til IMG_1234.jpg når den konverteres, og i
+// GitHub Actions finnes verken originals/ eller .drive-seen.json fra forrige kjøring.
+const stem = (n) => n.replace(/\.[^.]+$/, '').toLowerCase();
 const have = new Set();
 for (const d of [dir, join(root, 'originals')]) {
-  try { for (const n of await readdir(d)) have.add(n); } catch {}
+  try { for (const n of await readdir(d)) have.add(stem(n)); } catch {}
 }
 let added = 0;
 for (const f of files) {
   if (seen[f.id]) continue;
   const safe = f.name.replace(/[\\/:*?"<>|]/g, '_');
-  if (have.has(safe)) { seen[f.id] = safe; continue; }
+  if (have.has(stem(safe))) { seen[f.id] = safe; continue; }
   const res = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${key}`);
   if (!res.ok) { console.warn('Hoppet over', f.name, res.status); continue; }
   await writeFile(join(dir, safe), Buffer.from(await res.arrayBuffer()));
